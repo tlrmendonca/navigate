@@ -16,13 +16,13 @@ char * solve_problem(FILE* file, int Lines, int Columns, int start_l, int start_
   }
 
   // Some other logic...
-  // printf("Map (%d x %d):\n", Lines, Columns);
-  // for (int i = 0; i < Lines; i++) {
-  //   for (int j = 0; j < Columns; j++) {
-  //     printf("%d ", map[i][j]);
-  //   }
-  //   printf("\n");
-  // }
+  printf("Map (%d x %d):\n", Lines, Columns);
+  for (int i = 0; i < Lines; i++) {
+    for (int j = 0; j < Columns; j++) {
+      printf("%d ", map[i][j]);
+    }
+    printf("\n");
+  }
   
   // Free allocated memory
   for (int i = 0; i < Lines; i++)
