@@ -75,6 +75,30 @@ char * solve_problem(FILE* file, int Lines, int Columns, int start_l, int start_
 
   printf("The total value form all the positive energies within %d spaces is %d\n",k, sum_energy);
 
+  //Task 3: produce the path from (l1, c1) to (l2, c2), traveling first vertically and then horizontally
+  int curr_l = start_l;
+  int curr_c = start_c;
+
+  // Deslocation vertically until we get to l2
+  while (curr_l != l2) {
+    if (l2 < curr_l){
+      curr_l--;           // Goes up one line
+    } else {
+      curr_l++;           // Goes down one line
+    }
+    printf("(%d,%d)\n", curr_l, curr_c);
+  }
+
+  // Deslocation horizontaly until we get to c2
+  while (curr_c != c2) {
+    if (c2 < curr_c){
+      curr_c--;           // Goes left one line
+    } else {
+      curr_c++;           // Goes right one line
+    }
+    printf("(%d,%d)\n", curr_l, curr_c);
+  }
+
   // Free allocated memory
   for (int i = 0; i < Lines; i++)
     free(map[i]);
@@ -121,7 +145,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Debug: Print Header
-    // printf("Lines: %d, Columns: %d, Start: (%d, %d), k: %d", Lines, Columns, start_l, start_c, k);
+    // printf("Lines: %d, Columns: %d, Start: (%d, %d), k: %d\n", Lines, Columns, start_l, start_c, k);
 
     // Solve Current Problem
     char *result = solve_problem(file, Lines, Columns, start_l, start_c, k, l2, c2);
