@@ -23,6 +23,38 @@ char * solve_problem(FILE* file, int Lines, int Columns, int start_l, int start_
     }
     printf("\n");
   }
+
+  // Task 1: Identify the largest positive energy value in the given map that is k or fewer steps away from the initial position.
+  int max_energy = 0; // Store the biggest positive value found
+  int found= 0;       // Flat to identify if we found a value bigger than 0
+
+  for (int i = 0; i < Lines; i++) {
+    for (int j = 0; j < Columns; j++) {
+      //Calculate the Manhattan distance between (i,j) and (start_l,start_c)
+      int dist = abs(i - start_l) + abs(j - start_c);
+
+      if (dist <= k) {
+        int valor = map[i][j];
+
+        if (valor > 0) {
+          if (!found){
+            // First positive cell within the radius
+            max_energy = valor;
+            found = 1;
+          } else if (valor > max_energy){ 
+            // Update if higher value found
+            max_energy = valor;
+          }
+        }
+      }
+    }
+  }
+
+  if (found) {
+    printf("The biggest value of positive energy found within %d spaces is: %d\n", k, max_energy);
+  } else {
+    printf("Did not find any positive value within %d spaces\n", k);
+  }
   
   // Free allocated memory
   for (int i = 0; i < Lines; i++)
