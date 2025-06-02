@@ -56,6 +56,25 @@ char * solve_problem(FILE* file, int Lines, int Columns, int start_l, int start_
     printf("Did not find any positive value within %d spaces\n", k);
   }
   
+  // Task 2: add all positive energy values ​​of the cells within the map that are at a distance less than or equal to k from the initial position
+  int sum_energy = 0;
+
+  for (int i = 0; i < Lines; i++) {
+    for (int j = 0; j < Columns; j++) {
+      //Calculate the Manhattan distance between (i,j) and (start_l,start_c)
+      int dist = abs(i - start_l) + abs(j - start_c);
+
+      if (dist <= k) {
+        int valor = map[i][j];
+        if (valor > 0) {
+          sum_energy += valor;
+        }
+      }
+    }
+  }
+
+  printf("The total value form all the positive energies within %d spaces is %d\n",k, sum_energy);
+
   // Free allocated memory
   for (int i = 0; i < Lines; i++)
     free(map[i]);
