@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-char * solve_problem(FILE* file, int Lines, int Columns, int start_l, int start_c, int k, int l2, int c2) {
+void solve_problem(FILE* i_file, FILE* o_file, int Lines, int Columns, int start_l, int start_c, int k, int l2, int c2) {
   // Initialize Map
   int **map = (int **)malloc(Lines * sizeof(int *));
   for (int i = 0; i < Lines; i++)
@@ -11,92 +11,97 @@ char * solve_problem(FILE* file, int Lines, int Columns, int start_l, int start_
   // Fill Map
   for (int i = 0; i < Lines; i++) {
     for (int j = 0; j < Columns; j++) {
-      fscanf(file, "%d", &map[i][j]); // TODO: Check efficiency of scanning entire lines at a time
+      fscanf(i_file, "%d", &map[i][j]); // TODO: Check efficiency of scanning entire lines at a time
     }
   }
-
-  // Some other logic...
-  printf("Map (%d x %d):\n", Lines, Columns);
-  for (int i = 0; i < Lines; i++) {
-    for (int j = 0; j < Columns; j++) {
-      printf("%d ", map[i][j]);
-    }
-    printf("\n");
+  
+  // Check if the input is valid
+  if (start_l < 1 || start_l >= Lines + 1 || start_c < 1 || start_c >= Columns + 1) {
+    fprintf(o_file, "%d %d %d %d %d\n", Lines, Columns, start_l, start_c, k);
+    return;
   }
 
+  // Dubug: Print the map
+  // printf("Map (%d x %d):\n", Lines, Columns);
+  // for (int i = 0; i < Lines; i++) {
+  //   for (int j = 0; j < Columns; j++) {
+  //     printf("%d ", map[i][j]);
+  //   }
+  //   printf("\n");
+  // }
+  
   // Task 1: Identify the largest positive energy value in the given map that is k or fewer steps away from the initial position.
-  int max_energy = 0; // Store the biggest positive value found
-  int found= 0;       // Flat to identify if we found a value bigger than 0
+  if (k < 0) { 
+    int max_energy = 0;   // Store the biggest positive value found
+    int coord_l = start_l - 1;
+    int coord_c = start_c - 1;
 
-  for (int i = 0; i < Lines; i++) {
-    for (int j = 0; j < Columns; j++) {
-      //Calculate the Manhattan distance between (i,j) and (start_l,start_c)
-      int dist = abs(i - start_l) + abs(j - start_c);
+    for (int i = 0; i < Lines; i++) {
+      for (int j = 0; j < Columns; j++) {
+        // Calculate the distance between (i,j) and (start_l,start_c)
+        int dist = abs(i - coord_l) + abs(j - coord_c);
 
-      if (dist <= k) {
-        int valor = map[i][j];
+        if (dist <= abs(k) && dist > 0) {
+          int value = map[i][j];
 
-        if (valor > 0) {
-          if (!found){
-            // First positive cell within the radius
-            max_energy = valor;
-            found = 1;
-          } else if (valor > max_energy){ 
-            // Update if higher value found
-            max_energy = valor;
+          if (value > max_energy) {
+            max_energy = value;   // Update max_energy if a higher value is found
           }
         }
       }
     }
-  }
 
-  if (found) {
-    printf("The biggest value of positive energy found within %d spaces is: %d\n", k, max_energy);
-  } else {
-    printf("Did not find any positive value within %d spaces\n", k);
-  }
-  
-  // Task 2: add all positive energy values ​​of the cells within the map that are at a distance less than or equal to k from the initial position
-  int sum_energy = 0;
+    fprintf(o_file, "%d %d %d %d %d %d\n", Lines, Columns, start_l, start_c, k, max_energy);
 
-  for (int i = 0; i < Lines; i++) {
-    for (int j = 0; j < Columns; j++) {
-      //Calculate the Manhattan distance between (i,j) and (start_l,start_c)
-      int dist = abs(i - start_l) + abs(j - start_c);
+  } else if (k > 0) {
+    // Task 2: Add all positive energy values ​​of the cells within the map that are at a distance less than or equal to k from the initial position
+    int sum_energy = 0;
+    int coord_l = start_l - 1;
+    int coord_c = start_c - 1;
 
-      if (dist <= k) {
-        int valor = map[i][j];
-        if (valor > 0) {
-          sum_energy += valor;
+    for (int i = 0; i < Lines; i++) {
+      for (int j = 0; j < Columns; j++) {
+        //Calculate the distance between (i,j) and (start_l,start_c)
+        int dist = abs(i - coord_l) + abs(j - coord_c);
+
+        if (dist <= k && dist > 0) {
+          int value = map[i][j];
+          if (value > 0) {
+            sum_energy += value;
+          }
         }
       }
     }
-  }
 
-  printf("The total value form all the positive energies within %d spaces is %d\n",k, sum_energy);
 
-  //Task 3: produce the path from (l1, c1) to (l2, c2), traveling first vertically and then horizontally
-  int curr_l = start_l;
-  int curr_c = start_c;
+    fprintf(o_file, "%d %d %d %d %d %d\n", Lines, Columns, start_l, start_c, k, sum_energy);
 
-  // Deslocation vertically until we get to l2
-  while (curr_l != l2) {
-    if (l2 < curr_l){
-      curr_l--;           // Goes up one line
-    } else {
-      curr_l++;           // Goes down one line
+  } else if (k == 0) {
+    //Task 3: produc e the path from (l1, c1) to (l2, c2), traveling first vertically and then horizontally
+    fprintf(o_file, "%d %d %d %d %d %d %d\n", Lines, Columns, start_l, start_c, k, l2, c2);
+
+
+    int curr_l = start_l;
+    int curr_c = start_c;
+  
+    // Deslocation vertically until we get to l2
+    while (curr_l != l2) {
+      if (l2 < curr_l){
+        curr_l--;           // Goes up one line
+      } else {
+        curr_l++;           // Goes down one line
+      }
+      fprintf(o_file, "(%d,%d)\n", curr_l, curr_c);
     }
-    printf("(%d,%d)\n", curr_l, curr_c);
-  }
-
-  // Deslocation horizontaly until we get to c2
-  while (curr_c != c2) {
-    if (c2 < curr_c){
-      curr_c--;           // Goes left one line
-    } else {
-      curr_c++;           // Goes right one line
+    // Deslocation horizontaly until we get to c2
+    while (curr_c != c2) {
+      if (c2 < curr_c){
+        curr_c--;           // Goes left one line
+      } else {
+        curr_c++;           // Goes right one line
+      }
+      fprintf(o_file, "(%d,%d)\n", curr_l, curr_c);
     }
-    printf("(%d,%d)\n", curr_l, curr_c);
   }
 
   // Free allocated memory
@@ -104,7 +109,7 @@ char * solve_problem(FILE* file, int Lines, int Columns, int start_l, int start_
     free(map[i]);
   free(map);
 
-  return "Solution not implemented yet";
+  return;
 }
 
 int main(int argc, char *argv[]) {
@@ -148,8 +153,8 @@ int main(int argc, char *argv[]) {
     // printf("Lines: %d, Columns: %d, Start: (%d, %d), k: %d\n", Lines, Columns, start_l, start_c, k);
 
     // Solve Current Problem
-    char *result = solve_problem(file, Lines, Columns, start_l, start_c, k, l2, c2);
-    fprintf(output_file, "%s\n", result);
+    solve_problem(file, output_file, Lines, Columns, start_l, start_c, k, l2, c2);
+    fprintf(output_file, "\n"); // Add a newline after each problem output
   }
 
   fclose(file);
