@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "navigatefunctions.h"
+
 void solve_problem(FILE* i_file, FILE* o_file, int Lines, int Columns, int start_l, int start_c, int k, int l2, int c2) {
   // Initialize Map
   int **map = (int **)malloc(Lines * sizeof(int *));
@@ -11,13 +13,16 @@ void solve_problem(FILE* i_file, FILE* o_file, int Lines, int Columns, int start
   // Fill Map
   for (int i = 0; i < Lines; i++) {
     for (int j = 0; j < Columns; j++) {
-      fscanf(i_file, "%d", &map[i][j]); // TODO: Check efficiency of scanning entire lines at a time
+      if (fscanf(i_file, "%d", &map[i][j]) != 1) break;
     }
   }
   
   // Check if the input is valid
-  if (start_l < 1 || start_l >= Lines + 1 || start_c < 1 || start_c >= Columns + 1) {
-    fprintf(o_file, "%d %d %d %d %d\n", Lines, Columns, start_l, start_c, k);
+  if (Lines < 1 || Columns < 1 || start_l < 1 || start_l >= Lines + 1 || start_c < 1 || start_c >= Columns + 1) {
+    if (k != 0) 
+      fprintf(o_file, "%d %d %d %d %d\n", Lines, Columns, start_l, start_c, k);
+    else
+      fprintf(o_file, "%d %d %d %d %d %d %d\n", Lines, Columns, start_l, start_c, k, l2, c2);
     return;
   }
 
@@ -80,6 +85,10 @@ void solve_problem(FILE* i_file, FILE* o_file, int Lines, int Columns, int start
     //Task 3: produc e the path from (l1, c1) to (l2, c2), traveling first vertically and then horizontally
     fprintf(o_file, "%d %d %d %d %d %d %d\n", Lines, Columns, start_l, start_c, k, l2, c2);
 
+    // Check if the destination is valid
+    if (l2 < 1 || l2 > Lines || c2 < 1 || c2 > Columns) {
+      return;
+    }
 
     int curr_l = start_l;
     int curr_c = start_c;
@@ -91,7 +100,7 @@ void solve_problem(FILE* i_file, FILE* o_file, int Lines, int Columns, int start
       } else {
         curr_l++;           // Goes down one line
       }
-      fprintf(o_file, "(%d,%d)\n", curr_l, curr_c);
+      fprintf(o_file, "%d %d %d\n", curr_l, curr_c, map[curr_l - 1][curr_c - 1]);
     }
     // Deslocation horizontaly until we get to c2
     while (curr_c != c2) {
@@ -100,7 +109,7 @@ void solve_problem(FILE* i_file, FILE* o_file, int Lines, int Columns, int start
       } else {
         curr_c++;           // Goes right one line
       }
-      fprintf(o_file, "(%d,%d)\n", curr_l, curr_c);
+      fprintf(o_file, "%d %d %d\n", curr_l, curr_c, map[curr_l - 1][curr_c - 1]);
     }
   }
 
@@ -114,50 +123,94 @@ void solve_problem(FILE* i_file, FILE* o_file, int Lines, int Columns, int start
 
 int main(int argc, char *argv[]) {
 
-  // Check arguments
-  if (argc != 2) {
-    printf("Usage: %s <filename>\n", argv[0]);
-    return 1;
+  // Input File
+  // ERROR CODE: 1
+  if (argc != 2 || !is_maps_extension(argv[1])) {
+    print_error(1, 0);
+    return 0;
+  }
+  FILE *maps_file = fopen(argv[1], "r");
+  if (maps_file == NULL) {
+    print_error(1, 0);
+    return 0;
   }
 
-  // Input File
-  FILE *file = fopen(argv[1], "r");
-  if (file == NULL) {
-    perror("Error opening file");
-    return 1;
+  // Solutions File
+  // ERROR CODE: 2
+  char *solmaps_filename = get_solmaps_filename(argv[1]);
+  FILE *solmaps_file = fopen(solmaps_filename, "r");
+  
+  if (solmaps_file != NULL) {
+    print_error(2, 0);
+    fclose(maps_file); fclose(solmaps_file);
+    return 0;
   }
+  
+  // Check File
+  // ERROR CODE: 3
+  char *check_filename = get_check_filename(argv[1]);
+  FILE *check_file = fopen(check_filename, "r");
+
+  if (check_file != NULL) {
+    print_error(3, 0);
+    fclose(maps_file); fclose(solmaps_file); fclose(check_file);
+    return 0;
+  }
+
 
   // Output File
-  char output_filename[strlen(argv[1]) + 4]; // .1maps (6) becomes .sol1maps (9) + 1 for `\0`
-  strcpy(output_filename, argv[1]);
-  char *dot = strrchr(output_filename, '.');
-  strcpy(dot, ".sol1maps");
-  FILE *output_file = fopen(output_filename, "w");
+  // char output_filename[strlen(argv[1]) + 4]; // .1maps (6) becomes .sol1maps (9) + 1 for `\0`
+  // strcpy(output_filename, argv[1]);
+  // char *dot = strrchr(output_filename, '.');
+  // strcpy(dot, ".sol1maps");
+  // FILE *output_file = fopen(output_filename, "w");
 
-  while (!feof(file)) {  
+  int problem_number = 1;
 
-    // Problem Header
-    int Lines, Columns, start_l, start_c, k, l2, c2;
-    if (fscanf(file, "%d", &Lines) != 1) break;     // Double check for end of file
-    fscanf(file, "%d", &Columns);
-    fscanf(file, "%d", &start_l);
-    fscanf(file, "%d", &start_c);
-    fscanf(file, "%d", &k);
+  while (!feof(maps_file)) {  
 
-    if (k == 0) {
-      fscanf(file, "%d", &l2);
-      fscanf(file, "%d", &c2);
+    int ERROR = 0; // Error flag
+
+    // Solution File Problem Header
+    int sol_header[7];
+    if (!read_header(sol_header, solmaps_file)) {
+      print_error(4, problem_number);
+      fclose(maps_file); fclose(solmaps_file); fclose(check_file);
+      return 0;
+    }
+    
+
+    int sol_lines, sol_columns, sol_l1, sol_c1, sol_k, sol_l2, sol_c2;
+    if (fscanf(maps_file, "%d", &sol_lines) != 1) ERROR = 1;
+    if (fscanf(maps_file, "%d", &sol_columns) != 1) ERROR = 1;; 
+    if (fscanf(maps_file, "%d", &sol_l1) != 1) ERROR = 1; 
+    if (fscanf(maps_file, "%d", &sol_c1) != 1) ERROR = 1; 
+    if (fscanf(maps_file, "%d", &sol_k) != 1) ERROR = 1; 
+
+    if (sol_k == 0 && !ERROR) {
+      if (fscanf(maps_file, "%d", &sol_l2) != 1) ERROR = 1; 
+      if (fscanf(maps_file, "%d", &sol_c2) != 1) ERROR = 1; 
+    }
+
+    // ERROR CODE: 4
+    if (ERROR) {
+      print_error(4, problem_number);
+      fclose(maps_file); fclose(solmaps_file); fclose(check_file);
+      return 0;
     }
 
     // Debug: Print Header
     // printf("Lines: %d, Columns: %d, Start: (%d, %d), k: %d\n", Lines, Columns, start_l, start_c, k);
 
     // Solve Current Problem
-    solve_problem(file, output_file, Lines, Columns, start_l, start_c, k, l2, c2);
-    fprintf(output_file, "\n"); // Add a newline after each problem output
+    //solve_problem(maps_file, output_file, Lines, Columns, start_l, start_c, k, l2, c2);
+
+    // Keep track of the problem number
+    problem_number++;
   }
 
-  fclose(file);
-  fclose(output_file);
+  fclose(maps_file);
+  fclose(solmaps_file);
+  fclose(check_file);
   return 0;
 }
