@@ -14,18 +14,20 @@
 int is_maps_extension(const char *filename);
 
 // Transform the filename to a .solmaps extension
-char *get_solmaps_filename(const char *filename);
+void get_solmaps_filename(const char *filename, char *solmaps_filename);
 
 // Transform the filename to a .check extension
-char *get_check_filename(const char *filename);
+void get_check_filename(const char *filename, char *check_filename);
 
 // --------------
 // ---- READ ----
 // --------------
 
 // Read a header
-// Returns 1 if the header was read successfully, 0 otherwise
-int read_header(int header[7], FILE *file);
+// Returns 0 if failed, 1 if successful with 7 ints found, and 2 if successful with 8 ints found
+int read_header(int header[8], FILE *file);
+
+int is_problem_header_well_defined(int header[8]);
 
 // --------------
 // --- ERRORS ---
