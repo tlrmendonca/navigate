@@ -94,6 +94,15 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    // ERROR CODE: 15
+    // When the task is #1 (header[2] > 0), a solution is given (final energy > 0),
+    // but the final energy is below the required target (header[2])
+    if (sol_header[2] > 0 && sol_header[7] > 0 && sol_header[7] < sol_header[2]) {
+      print_error(15, problem_number); // Final energy does not reach the target
+      fclose(maps_file); fclose(solmaps_file); fclose(check_file);
+      return 0;
+    }
+
 
 
     // Debug: Print Header

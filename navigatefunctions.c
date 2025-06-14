@@ -138,6 +138,9 @@ void print_error(int error_id, int problem_number) {
     case 14:
       printf("Final energy presented is illegal (not positive nor -1).\nError code 14 in file problem %d.\n", problem_number);
       break;
+    case 15:
+      printf("Final energy does not reach target.\nError code 15 in file problem %d.\n", problem_number);
+      break;
     
     default:
       // Debug
