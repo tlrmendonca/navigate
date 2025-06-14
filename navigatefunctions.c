@@ -141,6 +141,10 @@ void print_error(int error_id, int problem_number) {
     case 15:
       printf("Final energy does not reach target.\nError code 15 in file problem %d.\n", problem_number);
       break;
+    case 16:
+      printf("Final energy presented is not the maximum achievable.\nError code 16 in file problem %d.\n", problem_number);
+      break;
+
     
     default:
       // Debug

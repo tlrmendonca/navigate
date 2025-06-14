@@ -104,6 +104,15 @@ int main(int argc, char *argv[]) {
     }
 
 
+    // ERROR CODE: 16
+    // When task is #2 (maximum energy, header[2] == -2), and a solution is given (positive final energy),
+    // the final energy in solution must match exactly the one in the check file
+    if (sol_header[2] == -2 && sol_header[7] > 0 && sol_header[7] != check_header[7]) {
+      print_error(16, problem_number);
+      fclose(maps_file); fclose(solmaps_file); fclose(check_file);
+      return 0;
+    }
+
 
     // Debug: Print Header
     // printf("Lines: %d, Columns: %d, Start: (%d, %d), k: %d\n", Lines, Columns, start_l, start_c, k);
