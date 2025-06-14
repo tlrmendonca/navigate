@@ -229,6 +229,15 @@ int main(int argc, char *argv[]) {
     problem_number++;
   }
 
+  // ERROR CODE: 23
+  // After processing all problems, .solmaps must not have leftover data
+  int extra;
+  if (fscanf(solmaps_file, "%d", &extra) == 1) {
+    print_error(23, 0); // No problem_number for this one
+    fclose(maps_file); fclose(solmaps_file); fclose(check_file);
+    return 0;
+  }
+
   fclose(maps_file);
   fclose(solmaps_file);
   fclose(check_file);

@@ -162,7 +162,9 @@ void print_error(int error_id, int problem_number) {
     case 22:
       printf("Final energy presented is inconsistent with sequence of prizes/penalties.\nError code 22 in file problem %d.\n", problem_number);
       break;
-
+    case 23:
+      printf("Excessive data on solution file.\nError code 23 at the end of file.\n");
+      break;
     
     default:
       // Debug
