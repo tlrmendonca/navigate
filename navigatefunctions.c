@@ -150,8 +150,9 @@ void print_error(int error_id, int problem_number) {
     case 18:
       printf("Move is not up/down/left/right.\nError code 18 in file problem %d.\n", problem_number);
       break;
-
-
+    case 19:
+      printf("Move is illegal: goes out of bounds or repeats a visited cell.\nError code 19 in file problem %d.\n", problem_number);
+      break;
     
     default:
       // Debug

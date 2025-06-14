@@ -116,12 +116,18 @@ int main(int argc, char *argv[]) {
 
     // Begin move sequence validation only if a valid solution is present
     if (sol_header[7] > 0) { 
-      
-      int expected_steps = sol_header[5];
+
+      int expected_steps = sol_header[5]; // Number of steps expected from header
       int previous_row = sol_header[3]; // starting line
       int previous_col = sol_header[4]; // starting column
 
-      int expected_steps = sol_header[5]; // Number of steps expected from header
+      // Track visited cells using a 2D array
+      int visited[1000][1000] = {{0}}; // adjust size if needed
+      int map_lines = sol_header[0];
+      int map_cols = sol_header[1];
+
+      // Mark the starting cell as visited
+      visited[previous_row - 1][previous_col - 1] = 1;
 
       // Attempt to read each move (row, column, energy)
       for (int step = 0; step < expected_steps; step++) {
@@ -145,11 +151,21 @@ int main(int argc, char *argv[]) {
           return 0;
         }
 
+        // ERROR CODE: 19
+        // Out of bounds or already visited
+        if (row < 1 || row > map_lines || col < 1 || col > map_cols || visited[row - 1][col - 1]) {
+          print_error(19, problem_number);
+          fclose(maps_file); fclose(solmaps_file); fclose(check_file);
+          return 0;
+        }
+
+        visited[row - 1][col - 1] = 1; // Mark as visited
+
         // Update previous position
         previous_row = row;
         previous_col = col;
 
-        // TODO: Error 19+ go here
+        // TODO: Error 20+ go here
       }
     }
 
