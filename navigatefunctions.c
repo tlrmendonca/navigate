@@ -147,6 +147,10 @@ void print_error(int error_id, int problem_number) {
     case 17:
       printf("Unable to read a move in solution file (.solmaps).\nError code 17 in file problem %d.\n", problem_number);
       break;
+    case 18:
+      printf("Move is not up/down/left/right.\nError code 18 in file problem %d.\n", problem_number);
+      break;
+
 
     
     default:

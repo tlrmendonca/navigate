@@ -115,10 +115,14 @@ int main(int argc, char *argv[]) {
 
 
     // Begin move sequence validation only if a valid solution is present
-    if (sol_header[7] > 0) {
+    if (sol_header[7] > 0) { 
+      
+      int expected_steps = sol_header[5];
+      int previous_row = sol_header[3]; // starting line
+      int previous_col = sol_header[4]; // starting column
 
       int expected_steps = sol_header[5]; // Number of steps expected from header
-      
+
       // Attempt to read each move (row, column, energy)
       for (int step = 0; step < expected_steps; step++) {
         int row, col, energy;
@@ -131,7 +135,21 @@ int main(int argc, char *argv[]) {
           return 0;
         }
 
-        // TODO: Additional error checks (18–22) go here in future steps
+        // ERROR CODE: 18
+        // Move must be exactly one cell away in cardinal direction
+        int dr = abs(row - previous_row);
+        int dc = abs(col - previous_col);
+        if (!((dr == 1 && dc == 0) || (dr == 0 && dc == 1))) {
+          print_error(18, problem_number);
+          fclose(maps_file); fclose(solmaps_file); fclose(check_file);
+          return 0;
+        }
+
+        // Update previous position
+        previous_row = row;
+        previous_col = col;
+
+        // TODO: Error 19+ go here
       }
     }
 
