@@ -208,6 +208,15 @@ int main(int argc, char *argv[]) {
 
         // TODO: Error 22+ go here
       }
+
+      // ERROR CODE: 22
+      // Final accumulated energy must match the value reported in the solution header
+      if (current_energy != sol_header[7]) {
+        print_error(22, problem_number);
+        fclose(maps_file); fclose(solmaps_file); fclose(check_file);
+        return 0;
+      }
+
     }
 
 
