@@ -62,6 +62,25 @@ int main(int argc, char *argv[]) {
     int check_res = read_header(check_header, check_file);
     // Note: check_header is never malformated
 
+
+    // --------------
+    // ---- HELP ----
+    // --------------
+    // Read the map from maps_file into memory for validation
+    int map_lines = sol_header[0];
+    int map_cols = sol_header[1];
+    int map[1000][1000]; // Adjust max size as needed
+
+    for (int i = 0; i < map_lines; i++) {
+      for (int j = 0; j < map_cols; j++) {
+        fscanf(maps_file, "%d", &map[i][j]);
+      }
+    }
+
+    // --------------
+    // ---- HELP ----
+    // --------------
+
     // Check solution header against check header
     for (int i = 0; i < 7; i++) {
       if (sol_header[i] != check_header[i]) {
@@ -165,7 +184,15 @@ int main(int argc, char *argv[]) {
         previous_row = row;
         previous_col = col;
 
-        // TODO: Error 20+ go here
+
+        // ERROR CODE: 20
+        if (energy != map[row - 1][col - 1]) {
+          print_error(20, problem_number);
+          fclose(maps_file); fclose(solmaps_file); fclose(check_file);
+          return 0;
+        }
+
+        // TODO: Error 21+ go here
       }
     }
 

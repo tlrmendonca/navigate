@@ -153,6 +153,9 @@ void print_error(int error_id, int problem_number) {
     case 19:
       printf("Move is illegal: goes out of bounds or repeats a visited cell.\nError code 19 in file problem %d.\n", problem_number);
       break;
+    case 20:
+      printf("Prize/penalty incorrect for that cell.\nError code 20 in file problem %d.\n", problem_number);
+      break;
     
     default:
       // Debug
