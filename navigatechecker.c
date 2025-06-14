@@ -114,6 +114,28 @@ int main(int argc, char *argv[]) {
     }
 
 
+    // Begin move sequence validation only if a valid solution is present
+    if (sol_header[7] > 0) {
+
+      int expected_steps = sol_header[5]; // Number of steps expected from header
+      
+      // Attempt to read each move (row, column, energy)
+      for (int step = 0; step < expected_steps; step++) {
+        int row, col, energy;
+
+        // ERROR CODE: 17
+        // Failed to read a complete move (less than 3 integers found)
+        if (fscanf(solmaps_file, "%d %d %d", &row, &col, &energy) != 3) {
+          print_error(17, problem_number);
+          fclose(maps_file); fclose(solmaps_file); fclose(check_file);
+          return 0;
+        }
+
+        // TODO: Additional error checks (18–22) go here in future steps
+      }
+    }
+
+
     // Debug: Print Header
     // printf("Lines: %d, Columns: %d, Start: (%d, %d), k: %d\n", Lines, Columns, start_l, start_c, k);
 

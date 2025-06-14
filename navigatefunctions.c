@@ -144,6 +144,9 @@ void print_error(int error_id, int problem_number) {
     case 16:
       printf("Final energy presented is not the maximum achievable.\nError code 16 in file problem %d.\n", problem_number);
       break;
+    case 17:
+      printf("Unable to read a move in solution file (.solmaps).\nError code 17 in file problem %d.\n", problem_number);
+      break;
 
     
     default:
