@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < map_lines; i++) {
       for (int j = 0; j < map_cols; j++) {
-        fscanf(maps_file, "%d", &map[i][j]);
+        fscanf(maps_file, "%d", &map[i][j]); //how to deal with this compiling warning
       }
     }
 
@@ -145,6 +145,8 @@ int main(int argc, char *argv[]) {
       int map_lines = sol_header[0];
       int map_cols = sol_header[1];
 
+      int current_energy = sol_header[6]; // Initial energy from header
+
       // Mark the starting cell as visited
       visited[previous_row - 1][previous_col - 1] = 1;
 
@@ -192,7 +194,19 @@ int main(int argc, char *argv[]) {
           return 0;
         }
 
-        // TODO: Error 21+ go here
+        // Accumulate energy
+        current_energy += energy;
+
+        // ERROR CODE: 21
+        // Energy must remain strictly positive after every move
+        if (current_energy <= 0) {
+          print_error(21, problem_number);
+          fclose(maps_file); fclose(solmaps_file); fclose(check_file);
+          return 0;
+        }
+
+
+        // TODO: Error 22+ go here
       }
     }
 

@@ -156,6 +156,9 @@ void print_error(int error_id, int problem_number) {
     case 20:
       printf("Prize/penalty incorrect for that cell.\nError code 20 in file problem %d.\n", problem_number);
       break;
+    case 21:
+      printf("Energy has reached zero or negative value along the path.\nError code 21 in file problem %d.\n", problem_number);
+      break;
     
     default:
       // Debug
