@@ -47,39 +47,18 @@ int main(int argc, char *argv[]) {
 
   while (!feof(maps_file)) {  
 
-    int ERROR = 0; // Error flag
+    int check_header[8];
+    int check_res = read_correct_header(check_header, check_file);
+    // Note: check_header is never malformated
 
     // Solution File Problem Header
     int sol_header[8];
-    int sol_res = read_header(sol_header, solmaps_file);
-    if (!sol_res) {
+    int sol_res = read_header(sol_header, (check_res == 2) ? 8 : 7, solmaps_file);
+    if (!sol_res) { // if 0 then error
       print_error(4, problem_number); // ERROR CODE: 4
       fclose(maps_file); fclose(solmaps_file); fclose(check_file);
       return 0;
     }
-
-    int check_header[8];
-    int check_res = read_header(check_header, check_file);
-    // Note: check_header is never malformated
-
-
-    // --------------
-    // ---- HELP ----
-    // --------------
-    // Read the map from maps_file into memory for validation
-    int map_lines = sol_header[0];
-    int map_cols = sol_header[1];
-    int map[1000][1000]; // Adjust max size as needed
-
-    for (int i = 0; i < map_lines; i++) {
-      for (int j = 0; j < map_cols; j++) {
-        fscanf(maps_file, "%d", &map[i][j]); //how to deal with this compiling warning
-      }
-    }
-
-    // --------------
-    // ---- HELP ----
-    // --------------
 
     // Check solution header against check header
     for (int i = 0; i < 7; i++) {
@@ -114,125 +93,170 @@ int main(int argc, char *argv[]) {
     }
 
     // ERROR CODE: 15
-    // When the task is #1 (header[2] > 0), a solution is given (final energy > 0),
+    // When the task is #1 (sol_header[2] > 0), a solution is given (check_header[7] > 0),
     // but the final energy is below the required target (header[2])
-    if (sol_header[2] > 0 && sol_header[7] > 0 && sol_header[7] < sol_header[2]) {
+    if (sol_header[2] > 0 && check_header[7] > 0 && sol_header[7] < sol_header[2]) {
       print_error(15, problem_number); // Final energy does not reach the target
       fclose(maps_file); fclose(solmaps_file); fclose(check_file);
       return 0;
     }
 
-
     // ERROR CODE: 16
-    // When task is #2 (maximum energy, header[2] == -2), and a solution is given (positive final energy),
-    // the final energy in solution must match exactly the one in the check file
-    if (sol_header[2] == -2 && sol_header[7] > 0 && sol_header[7] != check_header[7]) {
+    // When task is #2 (sol_header[2] == -2), and a solution is given (check_header[7] > 0),
+    // but the final energy in solution doesn't match exactly the one in the check file
+    if (sol_header[2] == -2 && check_header[7] > 0 && sol_header[7] != check_header[7]) {
       print_error(16, problem_number);
       fclose(maps_file); fclose(solmaps_file); fclose(check_file);
       return 0;
     }
 
-
     // Begin move sequence validation only if a valid solution is present
-    if (sol_header[7] > 0) { 
+    if (sol_header[7] > 0) {
 
+      int error_found = 0; // Flag to track if any error is found (facilitate the frees)
       int expected_steps = sol_header[5]; // Number of steps expected from header
-      int previous_row = sol_header[3]; // starting line
-      int previous_col = sol_header[4]; // starting column
-
+      
       // Track visited cells using a 2D array
-      int visited[1000][1000] = {{0}}; // adjust size if needed
-      int map_lines = sol_header[0];
-      int map_cols = sol_header[1];
-
-      int current_energy = sol_header[6]; // Initial energy from header
-
+      // expected_steps + 1 to account for the initial position
+      int **visited = (int **)malloc((expected_steps + 1) * sizeof(int *));
+      for (int i = 0; i <= expected_steps; i++) {
+        visited[i] = (int *)malloc(3 * sizeof(int));
+        visited[i][0] = -1; // Initialize to -1
+        visited[i][1] = -1; // Initialize to -1
+        visited[i][2] = -1; // Initialize to -1
+      }
+      
       // Mark the starting cell as visited
-      visited[previous_row - 1][previous_col - 1] = 1;
+      visited[0][0] = sol_header[3];
+      visited[0][1] = sol_header[4];
+      visited[0][2] = sol_header[6];
 
-      // Attempt to read each move (row, column, energy)
-      for (int step = 0; step < expected_steps; step++) {
-        int row, col, energy;
-
+      for (int step = 1; step < expected_steps; step++) {
         // ERROR CODE: 17
         // Failed to read a complete move (less than 3 integers found)
-        if (fscanf(solmaps_file, "%d %d %d", &row, &col, &energy) != 3) {
+        if (fscanf(solmaps_file, "%d", &visited[step][0]) != 1 || 
+            fscanf(solmaps_file, "%d", &visited[step][1]) != 1 ||
+            fscanf(solmaps_file, "%d", &visited[step][2]) != 1) {
           print_error(17, problem_number);
           fclose(maps_file); fclose(solmaps_file); fclose(check_file);
-          return 0;
+          error_found = 1;
+          goto free_visited;
         }
+      }
+      
+      // Helper variables
+      int map_lines = sol_header[0];
+      int map_cols = sol_header[1];
+      int accumulated_energy = sol_header[6];
+
+      // Finally read the map
+      int maps_header[8];
+      read_correct_header(maps_header, maps_file);
+      
+      // Initialize Map
+      int **map = (int **)malloc(maps_header[0] * sizeof(int *));
+      for (int i = 0; i < maps_header[0]; i++)
+        map[i] = (int *)malloc(maps_header[1] * sizeof(int));
+
+      // Fill Map
+      for (int i = 0; i < maps_header[0]; i++) {
+        for (int j = 0; j < maps_header[1]; j++) {
+          if (fscanf(maps_file, "%d", &map[i][j]) != 1)
+            return 0; // Something went wrong
+        }
+      }
+
+      // Verify each move (row, column, energy)
+      for (int step = 1; step < expected_steps; step++) {
+        int cur_row = visited[step][0];
+        int cur_col = visited[step][1];
+        int cell_energy = visited[step][2];
 
         // ERROR CODE: 18
-        // Move must be exactly one cell away in cardinal direction
-        int dr = abs(row - previous_row);
-        int dc = abs(col - previous_col);
-        if (!((dr == 1 && dc == 0) || (dr == 0 && dc == 1))) {
+        // Move must be exactly one cell away
+        int moved_row = abs(cur_row - visited[step-1][0]);
+        int moved_col = abs(cur_col - visited[step-1][0]);
+        if ((moved_row + moved_col) != 1) {
           print_error(18, problem_number);
           fclose(maps_file); fclose(solmaps_file); fclose(check_file);
-          return 0;
+          error_found = 1;
+          goto free_map;
         }
 
         // ERROR CODE: 19
-        // Out of bounds or already visited
-        if (row < 1 || row > map_lines || col < 1 || col > map_cols || visited[row - 1][col - 1]) {
+        // Out of bounds or ...
+        if (cur_row < 1 || cur_row > map_lines ||
+            cur_col < 1 || cur_col > map_cols) {
           print_error(19, problem_number);
           fclose(maps_file); fclose(solmaps_file); fclose(check_file);
-          return 0;
+          error_found = 1;
+          goto free_map;
+        }
+        // ... already visited
+        for (int i = 0; i < step; i++) {
+          if (visited[i][0] == cur_row && visited[i][1] == cur_col) {
+            print_error(19, problem_number);
+            fclose(maps_file); fclose(solmaps_file); fclose(check_file);
+            error_found = 1;
+            goto free_map;
+          }
         }
 
-        visited[row - 1][col - 1] = 1; // Mark as visited
-
-        // Update previous position
-        previous_row = row;
-        previous_col = col;
-
-
         // ERROR CODE: 20
-        if (energy != map[row - 1][col - 1]) {
+        // The energy on the step doesn't match the value on the map
+        if (cell_energy != map[cur_row - 1][cur_col - 1]) {
           print_error(20, problem_number);
           fclose(maps_file); fclose(solmaps_file); fclose(check_file);
-          return 0;
+          error_found = 1;
+          goto free_map;
         }
 
         // Accumulate energy
-        current_energy += energy;
+        accumulated_energy += cell_energy;
 
         // ERROR CODE: 21
         // Energy must remain strictly positive after every move
-        if (current_energy <= 0) {
+        if (accumulated_energy <= 0) {
           print_error(21, problem_number);
           fclose(maps_file); fclose(solmaps_file); fclose(check_file);
-          return 0;
+          error_found = 1;
+          goto free_map;
         }
-
-
-        // TODO: Error 22+ go here
       }
 
       // ERROR CODE: 22
-      // Final accumulated energy must match the value reported in the solution header
-      if (current_energy != sol_header[7]) {
+      // Final accumulated energy doesn't match the value in the solution header
+      if (accumulated_energy != sol_header[7]) {
         print_error(22, problem_number);
         fclose(maps_file); fclose(solmaps_file); fclose(check_file);
-        return 0;
+        error_found = 1;
+        goto free_map;
       }
 
+      // Free blocks
+      free_map:
+      for (int i = 0; i < maps_header[0]; i++) {
+        free(map[i]);
+      }
+      free(map);
+    
+      free_visited:
+      for (int i = 0; i < expected_steps + 1; i++) {
+        free(visited[i]);
+      }
+      free(visited);
+
+      if (error_found) {
+        return 0; // Exit if any error was found
+      }
     }
-
-
-    // Debug: Print Header
-    // printf("Lines: %d, Columns: %d, Start: (%d, %d), k: %d\n", Lines, Columns, start_l, start_c, k);
-
-    // Solve Current Problem
-    //solve_problem(maps_file, output_file, Lines, Columns, start_l, start_c, k, l2, c2);
 
     problem_number++;
   }
 
   // ERROR CODE: 23
   // After processing all problems, .solmaps must not have leftover data
-  int extra;
-  if (fscanf(solmaps_file, "%d", &extra) == 1) {
+  if (fgetc(solmaps_file) != EOF) {
     print_error(23, 0); // No problem_number for this one
     fclose(maps_file); fclose(solmaps_file); fclose(check_file);
     return 0;

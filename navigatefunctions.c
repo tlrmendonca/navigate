@@ -40,9 +40,24 @@ void get_check_filename(const char *filename, char *check_filename) {
 // ---- READ ----
 // --------------
 
-// Read a header
+// Read a possibly broken header
 // Returns 0 if failed, 1 if successful with 7 ints found, and 2 if successful with 8 ints found
-int read_header(int header[8], FILE *file) {
+int read_header(int header[8], int expected, FILE *file) {
+  int count = 0;
+  while (count < expected && fscanf(file, "%d", &header[count]) == 1) {
+    count++;
+  }
+
+  if (count < expected) {
+    return 0;
+  }
+
+  return 1;
+}
+
+// Read a known to be correct header
+// Returns 0 if failed, 1 if successful with 7 ints found, and 2 if successful with 8 ints found
+int read_correct_header(int header[8], FILE *file) {
   int count = 0;
   while (count < 7 && fscanf(file, "%d", &header[count]) == 1) {
     count++;
@@ -56,6 +71,7 @@ int read_header(int header[8], FILE *file) {
   if (is_problem_header_well_defined(header)) {
     if (fscanf(file, "%d", &header[7]) == 1)
       return 2; // Read it
+    else return 0;
   }
 
   return 1;
