@@ -122,7 +122,7 @@ void print_error(int error_id, int problem_number) {
       printf("Unable to open verification file (extension .check).\nError code 3.\n");
       break;
     case 4:
-      printf("Unable to read header first line of solution.\nError code 4 in file problem %d.\n", problem_number);
+      printf("Unable to read first line of solution.\nError code 4 in file problem %d.\n", problem_number);
       break;
     case 5:
       printf("Number of lines is incorrect.\nError code 5 in file problem %d.\n", problem_number);
@@ -179,7 +179,7 @@ void print_error(int error_id, int problem_number) {
       printf("Final energy presented is inconsistent with sequence of prizes/penalties.\nError code 22 in file problem %d.\n", problem_number);
       break;
     case 23:
-      printf("Excessive data on solution file.\nError code 23 at the end of file.\n");
+      printf("Excessive data on solution file.\nError code 23 at end of file.\n");
       break;
     
     default:

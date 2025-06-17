@@ -136,9 +136,7 @@ int main(int argc, char *argv[]) {
       for (int step = 1; step <= expected_steps; step++) {
         // ERROR CODE: 17
         // Failed to read a complete move (less than 3 integers found)
-        if (fscanf(solmaps_file, "%d", &visited[step][0]) != 1 || 
-            fscanf(solmaps_file, "%d", &visited[step][1]) != 1 ||
-            fscanf(solmaps_file, "%d", &visited[step][2]) != 1) {
+        if (fscanf(solmaps_file, "%d %d %d", &visited[step][0], &visited[step][1], &visited[step][2]) != 3 ) {
           print_error(17, problem_number);
           fclose(maps_file); fclose(solmaps_file); fclose(check_file);
           error_found = 1;
