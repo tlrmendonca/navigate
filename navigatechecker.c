@@ -45,7 +45,9 @@ int main(int argc, char *argv[]) {
   // Keep track of the problem number
   int problem_number = 1;
 
-  while (!feof(maps_file)) {  
+  char c;
+  while (fscanf(check_file, " %c", &c) == 1) {  
+    ungetc(c, check_file);
 
     int check_header[8];
     int check_res = read_correct_header(check_header, check_file);
@@ -131,7 +133,7 @@ int main(int argc, char *argv[]) {
       visited[0][1] = sol_header[4];
       visited[0][2] = sol_header[6];
 
-      for (int step = 1; step < expected_steps; step++) {
+      for (int step = 1; step <= expected_steps; step++) {
         // ERROR CODE: 17
         // Failed to read a complete move (less than 3 integers found)
         if (fscanf(solmaps_file, "%d", &visited[step][0]) != 1 || 
@@ -151,7 +153,7 @@ int main(int argc, char *argv[]) {
 
       // Finally read the map
       int maps_header[8];
-      read_correct_header(maps_header, maps_file);
+      read_header(maps_header, 7, maps_file);
       
       // Initialize Map
       int **map = (int **)malloc(maps_header[0] * sizeof(int *));
@@ -167,7 +169,7 @@ int main(int argc, char *argv[]) {
       }
 
       // Verify each move (row, column, energy)
-      for (int step = 1; step < expected_steps; step++) {
+      for (int step = 1; step <= expected_steps; step++) {
         int cur_row = visited[step][0];
         int cur_col = visited[step][1];
         int cell_energy = visited[step][2];
@@ -175,7 +177,7 @@ int main(int argc, char *argv[]) {
         // ERROR CODE: 18
         // Move must be exactly one cell away
         int moved_row = abs(cur_row - visited[step-1][0]);
-        int moved_col = abs(cur_col - visited[step-1][0]);
+        int moved_col = abs(cur_col - visited[step-1][1]);
         if ((moved_row + moved_col) != 1) {
           print_error(18, problem_number);
           fclose(maps_file); fclose(solmaps_file); fclose(check_file);
@@ -256,8 +258,8 @@ int main(int argc, char *argv[]) {
 
   // ERROR CODE: 23
   // After processing all problems, .solmaps must not have leftover data
-  if (fgetc(solmaps_file) != EOF) {
-    print_error(23, 0); // No problem_number for this one
+  if (fscanf(solmaps_file, " %c", &c) == 1) {
+    print_error(23, 0);
     fclose(maps_file); fclose(solmaps_file); fclose(check_file);
     return 0;
   }

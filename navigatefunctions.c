@@ -134,7 +134,7 @@ void print_error(int error_id, int problem_number) {
       printf("Problem variant is incorrect.\nError code 7 in file problem %d.\n", problem_number);
       break;
     case 8:
-      printf("Starting line if incorrect.\nError code 8 in file problem %d.\n", problem_number);
+      printf("Starting line is incorrect.\nError code 8 in file problem %d.\n", problem_number);
       break;
     case 9:
       printf("Starting column is incorrect.\nError code 9 in file problem %d.\n", problem_number);
