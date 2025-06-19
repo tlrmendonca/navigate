@@ -90,9 +90,9 @@ int is_problem_header_well_defined(int header[8]) {
   if (header[2] <= 0 && header[2] != -2) {
     return 0;
   }
-  // 2. l and c are unrestricted (???)
-  // 3. k must be in [0, LxC]
-  if (header[5] < 0 || header[5] > header[0] * header[1]) {
+  // 2. l and c are unrestricted ???
+  // 3. k must be in [0, LxC[
+  if (header[5] < 0 || header[5] >= header[0] * header[1]) {
     return 0;
   }
   // 4. Initial Energy must be positive
@@ -122,7 +122,7 @@ void print_error(int error_id, int problem_number) {
       printf("Unable to open verification file (extension .check).\nError code 3.\n");
       break;
     case 4:
-      printf("Unable to read first line of solution.\nError code 4 in file problem %d.\n", problem_number);
+      printf("Unable to read first line of solution (.solmaps).\nError code 4 in file problem %d.\n", problem_number);
       break;
     case 5:
       printf("Number of lines is incorrect.\nError code 5 in file problem %d.\n", problem_number);

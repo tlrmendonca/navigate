@@ -112,6 +112,23 @@ int main(int argc, char *argv[]) {
       return 0;
     }
 
+    // Finally read the map
+    int maps_header[8];
+    read_header(maps_header, 7, maps_file);
+    
+    // Initialize Map
+    int **map = (int **)malloc(maps_header[0] * sizeof(int *));
+    for (int i = 0; i < maps_header[0]; i++)
+      map[i] = (int *)malloc(maps_header[1] * sizeof(int));
+
+    // Fill Map
+    for (int i = 0; i < maps_header[0]; i++) {
+      for (int j = 0; j < maps_header[1]; j++) {
+        if (fscanf(maps_file, "%d", &map[i][j]) != 1)
+          return 0; // Something went wrong
+      }
+    }
+
     // Begin move sequence validation only if a valid solution is present
     if (sol_header[7] > 0) {
 
@@ -136,7 +153,7 @@ int main(int argc, char *argv[]) {
       for (int step = 1; step <= expected_steps; step++) {
         // ERROR CODE: 17
         // Failed to read a complete move (less than 3 integers found)
-        if (fscanf(solmaps_file, "%d %d %d", &visited[step][0], &visited[step][1], &visited[step][2]) != 3 ) {
+        if (fscanf(solmaps_file, "%d %d %d", &visited[step][0], &visited[step][1], &visited[step][2]) != 3) {
           print_error(17, problem_number);
           fclose(maps_file); fclose(solmaps_file); fclose(check_file);
           error_found = 1;
@@ -148,23 +165,6 @@ int main(int argc, char *argv[]) {
       int map_lines = sol_header[0];
       int map_cols = sol_header[1];
       int accumulated_energy = sol_header[6];
-
-      // Finally read the map
-      int maps_header[8];
-      read_header(maps_header, 7, maps_file);
-      
-      // Initialize Map
-      int **map = (int **)malloc(maps_header[0] * sizeof(int *));
-      for (int i = 0; i < maps_header[0]; i++)
-        map[i] = (int *)malloc(maps_header[1] * sizeof(int));
-
-      // Fill Map
-      for (int i = 0; i < maps_header[0]; i++) {
-        for (int j = 0; j < maps_header[1]; j++) {
-          if (fscanf(maps_file, "%d", &map[i][j]) != 1)
-            return 0; // Something went wrong
-        }
-      }
 
       // Verify each move (row, column, energy)
       for (int step = 1; step <= expected_steps; step++) {
