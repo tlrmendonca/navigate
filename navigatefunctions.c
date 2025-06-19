@@ -58,49 +58,25 @@ int read_header(int header[8], int expected, FILE *file) {
 // Read a known to be correct header
 // Returns 0 if failed, 1 if successful with 7 ints found, and 2 if successful with 8 ints found
 int read_correct_header(int header[8], FILE *file) {
-  int count = 0;
-  while (count < 7 && fscanf(file, "%d", &header[count]) == 1) {
-    count++;
+  char line_buffer[512];
+  if (fgets(line_buffer, sizeof(line_buffer), file) == NULL) {
+    return 0; // Failed to read a line
   }
 
-  if (count < 7) {
-    return 0;
+  // Try to parse up to 8 integers from the line buffer
+  int items_read = sscanf(line_buffer, "%d %d %d %d %d %d %d %d",
+      &header[0], &header[1], &header[2], &header[3],
+      &header[4], &header[5], &header[6], &header[7]);
+
+  if (items_read == 8) {
+    return 2;
+  }
+  
+  if (items_read == 7) {
+    return 1;
   }
 
-  // Check if there is an 8th integer
-  if (is_problem_header_well_defined(header)) {
-    if (fscanf(file, "%d", &header[7]) == 1)
-      return 2; // Read it
-    else return 0;
-  }
-
-  return 1;
-}
-
-// Confirm the header is a valid problem header
-// NOTE: Input:
-// [0] Lines [1] Columns [2] Minimal Energy [3] l [4] c [5] k [6] Initial Energy
-// NOTE2: The "header" is of size 8, but the last element is not actually part of it
-int is_problem_header_well_defined(int header[8]) {
-  // 1. Lines and Columns must be positive
-  if (header[0] <= 0 || header[1] <= 0) {
-    return 0;
-  }
-  // 2. Minimal Energy must be positive or -2
-  if (header[2] <= 0 && header[2] != -2) {
-    return 0;
-  }
-  // 2. l and c are unrestricted ???
-  // 3. k must be in [0, LxC[
-  if (header[5] < 0 || header[5] >= header[0] * header[1]) {
-    return 0;
-  }
-  // 4. Initial Energy must be positive
-  if (header[6] <= 0) {
-    return 0;
-  }
-
-  return 1; // Valid
+  return 0; 
 }
 
 // --------------
